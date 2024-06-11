@@ -10,12 +10,49 @@ elseif(isset($_POST['kd_bank'])){
 	
 	$kode_bank="";
 }
+
+
+if(isset($_POST['filter_dari'])){
+$filter_dari=$_POST['filter_dari'];
+$filter_sampai=$_POST['filter_sampai'];
+
+}
+elseif(isset($_GET['filter_dari'])){
+$filter_dari=$_GET['filter_dari'];
+$filter_sampai=$_GET['filter_sampai'];
+
+}
+
+else{
+$filter_sampai=date("Y-m-d");
+$filter_dari=date("Y-m-01");
+	$filter_jenis="";
+}
+
+$tahun_awal=date("Y");
+$tahun_ini=date("Y",strtotime($filter_dari));
+$tahun_ini2=date("Y",strtotime($filter_dari));
+$bulan_lalu=date("m",strtotime($filter_dari));
+$bulan_awal=1;
+if($bulan_lalu==1)
+{
+	$bulan_lalu=13-1;
+	$tahun_ini2=$tahun_ini2-1;
+	
+}else{
+	$bulan_lalu=$bulan_lalu-1;
+}
+
+$hari_terakhir=$tahun_ini2."-".$bulan_lalu."-01";
+ $hari_terakhir=date("t",strtotime($bulan_lalu));
+ $tgl_terakhir=$tahun_ini2."-".$bulan_lalu."-".date("t",strtotime($hari_terakhir));
+
 $qrybank=mysqli_query($con,"select * from bank_perusahaan where kd_bank='".$kode_bank."'");
 						$bank=mysqli_fetch_array($qrybank);
 ?>
 
 <section class="content-header">
-  <div class="pull-right" style="padding-right:5px"><a href="?page=mutasi.kas" data-toggle="tooltip" title="" class="btn btn-primary" data-original-title="Add New"><i class="fa fa-plus"></i> Mutasi Kas</a>
+  <div class="pull-right" style="padding-right:5px"><a href="?page=mutasi.kas" data-toggle="tooltip" title="" class="btn btn-warning" data-original-title="Add New"><i class="fa fa-plus"></i> Mutasi Kas</a>
         
       </div>
 	<h1>
@@ -130,40 +167,17 @@ $(document).ready(function()
                                             <th style="text-align:center;">Aksi</th>
                                         </tr>
 										<?php
-										$limit = 30;
-										if(isset($_GET['hal'])){
-											$hal = $_GET['hal'];
-										}
-										else{
-											$hal = 1;
-										}
+									        	        	    
+								
 
-										$offset = ($hal - 1) * $limit;
-										$i=1;
-										
-										if(!empty($filter_sampai) and !empty($filter_dari)){
-											
-											$qry_debet_all=mysqli_fetch_array(mysqli_query($con,"select sum(nilai) as nilai from arus_kas where keterangan like '%".@$filter_uraian."%' and  kd_bank like '%".$kode_bank."%' and tipe_kas='debet'  and kd_bank<>'' and kd_bank<>'Pilih'"));
-											$qry_kredit_all=mysqli_fetch_array(mysqli_query($con,"select sum(nilai) as nilai  from arus_kas where  keterangan like '%".@$filter_uraian."%' and  kd_bank like '%".$kode_bank."%' and tipe_kas='kredit'  and kd_bank<>'' and kd_bank<>'Pilih'"));
-											
-											
-											$qry_debet=mysqli_fetch_array(mysqli_query($con,"select sum(nilai) as nilai from arus_kas where tanggal between '".$filter_dari." 00:00:00"."' and '".$filter_sampai." 23:59:00"."'  and keterangan like '%".@$filter_uraian."%' and  kd_bank like '%".$kode_bank."%' and tipe_kas='debet'  and kd_bank<>'' and kd_bank<>'Pilih'"));
-											$qry_kredit=mysqli_fetch_array(mysqli_query($con,"select sum(nilai) as nilai  from arus_kas where tanggal between '".$filter_dari." 00:00:00"."' and '".$filter_sampai." 23:59:00"."'  and keterangan like '%".@$filter_uraian."%' and  kd_bank like '%".$kode_bank."%' and tipe_kas='kredit'  and kd_bank<>'' and kd_bank<>'Pilih'"));
-									
-											
-									    }else{
-												$qry_debet_all=mysqli_fetch_array(mysqli_query($con,"select sum(nilai) as nilai from arus_kas where keterangan like '%".@$filter_uraian."%' and  kd_bank like '%".$kode_bank."%' and tipe_kas='debet'  and kd_bank<>'' and kd_bank<>'Pilih'"));
-											$qry_kredit_all=mysqli_fetch_array(mysqli_query($con,"select sum(nilai) as nilai  from arus_kas where  keterangan like '%".@$filter_uraian."%' and  kd_bank like '%".$kode_bank."%' and tipe_kas='kredit'  and kd_bank<>'' and kd_bank<>'Pilih'"));
-											
-											
-											$qry_debet=mysqli_fetch_array(mysqli_query($con,"select sum(nilai) as nilai from arus_kas where month(tanggal)='".date("m")."' and year(tanggal)='".date("Y")."'   and keterangan like '%".@$filter_uraian."%' and  kd_bank like '%".$kode_bank."%' and tipe_kas='debet'  and kd_bank<>'' and kd_bank<>'Pilih'"));
-											$qry_kredit=mysqli_fetch_array(mysqli_query($con,"select sum(nilai) as nilai  from arus_kas where month(tanggal)='".date("m")."' and year(tanggal)='".date("Y")."'   and keterangan like '%".@$filter_uraian."%' and  kd_bank like '%".$kode_bank."%' and tipe_kas='kredit'  and kd_bank<>'' and kd_bank<>'Pilih'"));
-										}
-										
-										
-												$saldo_awalan=$qry_debet_all[0]-$qry_debet[0];
-										$saldo_kredit=$qry_kredit_all[0]-$qry_kredit[0];
-										
+															$qry_debet=mysqli_query($con,"select  sum(nilai) as nilai from arus_kas where kd_bank like '%".$kode_bank."%' and tipe_kas='debet'  and kd_bank<>'' and tanggal between '01-01-2010  00:00:01' and '".@$tgl_terakhir." 23:59:59' and  kd_bank<>'Pilih'");
+$saldo_debet_sebelumnya=mysqli_fetch_array($qry_debet);
+
+
+															$qry_kredit=mysqli_query($con,"select  sum(nilai) as nilai from arus_kas where kd_bank like '%".$kode_bank."%' and tipe_kas='kredit'  and kd_bank<>'' and tanggal between '01-01-2010  00:00:01' and '".@$tgl_terakhir." 23:59:59' and  kd_bank<>'Pilih'");
+$saldo_kredit_sebelumnya=mysqli_fetch_array($qry_kredit);
+
+$saldo_awalan=($saldo_debet_sebelumnya['nilai']-$saldo_kredit_sebelumnya['nilai']);										
 										
 										
 									   if(!empty($filter_sampai) and !empty($filter_dari)){
@@ -253,7 +267,9 @@ $(document).ready(function()
                                    
                <td style="text-align:center;">
                                            
-											<a href="?page=edit.mutasi.kas&id=<?php echo $row['0']?>"><span class="fa fa-edit"></span></a> <a href="hapus.mutasi.kas.php?id=<?php echo $row['0']?>" class="hapus"><span class="fa fa-trash-o"></span></a></td> 
+											<a class="btn btn-xs btn-warning" href="?page=edit.mutasi.kas&id=<?php echo $row['0']?>"><span class="fa fa-edit"></span>Edit</a>
+										     <?php if($_SESSION['loglevel']=="Administrator"){ ?> 
+											 <a href="hapus.mutasi.kas.php?id=<?php echo $row['0']?>" class="hapus"><span class="fa fa-trash-o"></span></a></td> <?php } ?>
                                         <?php
 										$i++;
 											$saldo_awalan=0;
